@@ -46,7 +46,7 @@ namespace KEZDOCSAPATXI.Services
                     .Select(p => new Player { Name = p.Name, Position = p.Position, isAssigned = false }).ToList();
 
 
-                var starters = new List<(Player player, string assignedPosition)>();
+                var starters = new List<AssignedPlayer>();
                 double totalScore = 0;
 
                 foreach (var req in formation)
@@ -63,7 +63,7 @@ namespace KEZDOCSAPATXI.Services
                         double score = ratingRuler(best.Position, targetPos);
                         totalScore += score;
 
-                        starters.Add((best, targetPos));
+                        starters.Add(new AssignedPlayer { Player=best,AssignedPosition=targetPos});
                     }
                 }
 
