@@ -6,6 +6,7 @@
     {
         public string Name { get; set; }
         public string Position { get; set; }
+        public bool isAssigned { get; set; } = false;
 
     }
 }
