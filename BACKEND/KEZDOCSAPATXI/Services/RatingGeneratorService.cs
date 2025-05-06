@@ -11,59 +11,43 @@ namespace KEZDOCSAPATXI.Services
 
     public class RatingGeneratorService : IRatingGeneratorService
     {
-        //Dictionary<string, int> squadPositionCounter = new Dictionary<string, int>
-        //    {
-        //        { "GK", 0 },
-        //        { "DF", 0 },
-        //        { "MF", 0 },
-        //        { "FW", 0 }
-        //     };
 
-
-        //public List<Lineup> GenerateLineups(List<Player> inputPlayersList)
-        //{
-
-        //}
-        //private void PositionProcesser(List<Player> input)
-        //{
-
-        //    foreach (Player item in input)
-        //    {
-        //        squadPositionCounter[item.Position]++;
-        //    }
-        //}
         public List<Lineup> GenerateAllLineups(List<Player> originalPlayers)
         {
-            var results = new List<Lineup>();
+            List<Lineup> results = new List<Lineup>();
 
             foreach (var preset in FormationPresets.Presets)
             {
                 string formationName = preset.Key;
-                var formation = preset.Value.ToPositionRequirements(); // Dictionary<string, int>
-
-                // Deep copy a játékoslistára, hogy ne módosítsuk eredetit
-                var players = originalPlayers
-                    .Select(p => new Player { Name = p.Name, Position = p.Position, isAssigned = false }).ToList();
+                Dictionary<string,int> formation = preset.Value.ToPositionRequirements(); 
 
 
-                var starters = new List<AssignedPlayer>();
-                double totalScore = 0;
-
-                foreach (var req in formation)
+                List<Player> playersCopy = originalPlayers.Select(p => new Player { Name = p.Name, Position = p.Position, isAssigned = false }).ToList(); 
+                List<AssignedPlayer> starters = new List<AssignedPlayer>();
+                double totalScore = 0;           
+                Dictionary< string,int> formationCopy = formation.ToDictionary(entry => entry.Key, entry => entry.Value);         
+                foreach (var position in formationCopy.Keys.ToList())
                 {
-                    string targetPos = req.Key;
-                    int needed = req.Value;
+                    List<Player> natives = playersCopy.Where(p => !p.isAssigned && p.Position == position).Take(formationCopy[position]).ToList();
 
-                    for (int i = 0; i < needed; i++)
+                    foreach (var player in natives)
                     {
-                        var best = FindBestPlayerForPosition(players, targetPos);
+                        player.isAssigned = true;
+                        totalScore += ratingRuler(player.Position, position);
+                        starters.Add(new AssignedPlayer { Player = player, AssignedPosition = position });
+                    }
+                      formationCopy[position] -= natives.Count;
+                }
+                foreach (var position in formationCopy)
+                {
+                    for (int i = 0; i < position.Value; i++)
+                    {
+                        var best = FindBestPlayerForPosition(playersCopy, position.Key);
                         if (best == null) break;
 
                         best.isAssigned = true;
-                        double score = ratingRuler(best.Position, targetPos);
-                        totalScore += score;
-
-                        starters.Add(new AssignedPlayer { Player=best,AssignedPosition=targetPos});
+                        totalScore += ratingRuler(best.Position, position.Key);
+                        starters.Add(new AssignedPlayer { Player = best, AssignedPosition = position.Key });
                     }
                 }
 
@@ -82,6 +66,7 @@ namespace KEZDOCSAPATXI.Services
 
             return results;
         }
+
         private Player FindBestPlayerForPosition(List<Player> players, string targetPos)
         {
             Player best = null;
