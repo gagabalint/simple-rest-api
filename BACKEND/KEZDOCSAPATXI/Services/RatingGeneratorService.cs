@@ -42,10 +42,7 @@ namespace KEZDOCSAPATXI.Services
                 {
                     for (int i = 0; i < position.Value; i++)
                     {
-                        var best = FindBestPlayerForPosition(playersCopy, position.Key);
-                        if (best == null) break;
-
-                        best.isAssigned = true;
+                        Player best = FindBestPlayerForPosition(playersCopy, position.Key);
                         totalScore += ratingRuler(best.Position, position.Key);
                         starters.Add(new AssignedPlayer { Player = best, AssignedPosition = position.Key });
                     }
@@ -53,17 +50,15 @@ namespace KEZDOCSAPATXI.Services
 
                 if (starters.Count == 11)
                 {
-                    var lineup = new Lineup
+                    Lineup lineup = new Lineup
                     {
                         Formation = formationName,
                         Rating = (int)Math.Round((totalScore / 11) * 100),
                         Players = starters
                     };
-
                     results.Add(lineup);
                 }
             }
-
             return results;
         }
 
@@ -79,9 +74,9 @@ namespace KEZDOCSAPATXI.Services
                 {
                     bestScore = score;
                     best = p;
+                    best.isAssigned = true;
                 }
             }
-
             return best;
         }
 
