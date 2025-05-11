@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     };
     generateBtn.onclick = function() {
-        // API kérés a backendhez
         fetch('http://localhost:5209/Lineup', {
             method: 'POST',
             headers: {
@@ -45,5 +44,55 @@ document.addEventListener('DOMContentLoaded', function() {
      
     };
     generateBtn.disabled = true
-
+    function displayResults(formations) {
+        resultsSection.innerHTML = '<h3>Generált felállások</h3>';
+        
+        formations.sort((a, b) => b.rating - a.rating);
+        
+        formations.forEach((formation, index) => {
+            let colorClass;
+            if (index === 0) colorClass = 'bg-success'; 
+            else if (index === formations.length - 1) colorClass = 'bg-danger'; 
+            else colorClass = 'bg-warning';
+            
+            const formationCard = document.createElement('div');
+            formationCard.className = `card mb-4 ${colorClass}`;
+            
+            let cardContent = `
+                <div class="card-header">
+                    <h4>Felállás: ${formation.formation} - Értékelés: ${formation.rating}%</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">`;
+            
+            const positions = {
+                'GK': [], 'DF': [], 'MF': [], 'FW': []
+            };
+            
+            formation.players.forEach(player => {
+                positions[player.assignedPosition].push(player.player.name);
+            });
+            
+            cardContent += `
+                <div class="col-12 mb-3 text-center">
+                    <strong>Kapus:</strong> ${positions['GK'].join(', ')}
+                </div>
+                <div class="col-12 mb-3 text-center">
+                    <strong>Védők:</strong> ${positions['DF'].join(', ')}
+                </div>
+                <div class="col-12 mb-3 text-center">
+                    <strong>Középpályások:</strong> ${positions['MF'].join(', ')}
+                </div>
+                <div class="col-12 mb-3 text-center">
+                    <strong>Támadók:</strong> ${positions['FW'].join(', ')}
+                </div>`;
+            
+            cardContent += `
+                    </div>
+                </div>`;
+            
+            formationCard.innerHTML = cardContent;
+            resultsSection.appendChild(formationCard);
+        });
+    }
 });
