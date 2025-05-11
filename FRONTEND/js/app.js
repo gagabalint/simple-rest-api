@@ -29,5 +29,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return false;
     };
+    generateBtn.onclick = function() {
+        // API kérés a backendhez
+        fetch('http://localhost:5209/Lineup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(players)
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayResults(data);
+        })
+     
+    };
+    generateBtn.disabled = true
 
-})
+});
